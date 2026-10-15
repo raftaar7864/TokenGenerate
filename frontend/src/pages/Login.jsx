@@ -16,7 +16,7 @@ export default function Login({ setIsAuth }) {
   };
   return <main className="login-page">
     <section className="login-visual">
-      <div className="brand"><div className="brand-mark">✦</div><div>TokenFlow<small>SMART TOKEN OPERATIONS</small></div></div>
+      <div className="brand"><div className="brand-mark">✦</div><div>Dr. Biswas<small>Token Generate Software</small></div></div>
       <div><div className="login-badge">✦ &nbsp; Simple. Secure. Organised.</div><h1>Every token.<br/>Under control.</h1><p>Generate batches, verify payments, and keep every record moving with one clear workspace.</p><div className="login-mini-stats"><div><strong>01</strong><span>Generate</span></div><div><strong>02</strong><span>Verify</span></div><div><strong>03</strong><span>Report</span></div></div></div>
       <div style={{fontSize:11,color:"#d8d3ff"}}>TOKENFLOW WORKSPACE · BUILT FOR EVERY SCREEN</div>
     </section>
