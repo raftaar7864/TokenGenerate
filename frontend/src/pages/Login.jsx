@@ -1,10 +1,11 @@
-
 import { useState } from "react";
 import axios from "axios";
 
-const API_BASE = (
-  import.meta.env.VITE_API_URL || "http://localhost:5000"
-).replace(/\/+$/, "");
+const API =
+  import.meta.env.VITE_API_URL ||
+  (import.meta.env.DEV
+    ? "http://localhost:5000"
+    : "https://tokenback.drbiswas.co.in");
 
 export default function Login({ setIsAuth }) {
   const [username, setUsername] = useState("");
@@ -14,35 +15,40 @@ export default function Login({ setIsAuth }) {
 
   const login = async (e) => {
     e.preventDefault();
-
-    if (loading) return;
-
     setError("");
+
+    const trimmedUsername = username.trim();
+
+    if (!trimmedUsername || !password) {
+      setError("Please enter your username and password.");
+      return;
+    }
+
     setLoading(true);
 
     try {
-      await axios.post(`${API_BASE}/api/auth/login`, {
-        username: username.trim(),
+      const { data } = await axios.post(`${API}/api/auth/login`, {
+        username: trimmedUsername,
         password,
       });
 
+      if (!data?.token || !data?.user) {
+        throw new Error("Invalid response received from server.");
+      }
+
       localStorage.setItem("auth", "true");
+      localStorage.setItem("authToken", data.token);
+      localStorage.setItem("user", JSON.stringify(data.user));
+
+      axios.defaults.headers.common.Authorization = `Bearer ${data.token}`;
+
       setIsAuth(true);
     } catch (err) {
-      console.error("Login failed:", err);
-
-      if (err.response?.status === 401 || err.response?.status === 400) {
-        setError("Username or password is incorrect. Please try again.");
-      } else if (!err.response) {
-        setError(
-          "Unable to connect to the server. Check your internet connection and try again."
-        );
-      } else {
-        setError(
-          err.response.data?.error ||
-            "Login failed. Please try again."
-        );
-      }
+      setError(
+        err.response?.data?.message ||
+          err.message ||
+          "Unable to sign in. Please try again."
+      );
     } finally {
       setLoading(false);
     }
@@ -71,8 +77,8 @@ export default function Login({ setIsAuth }) {
           </h1>
 
           <p>
-            Generate batches, verify payments, and keep every record moving
-            with one clear workspace.
+            Generate batches, verify tokens, and keep every record
+            organised in one simple workspace.
           </p>
 
           <div className="login-mini-stats">
@@ -103,7 +109,8 @@ export default function Login({ setIsAuth }) {
           <h2>Sign in to continue</h2>
 
           <p>
-            Enter your account details to open your token workspace.
+            Enter your account details to access your authorised
+            token workspace.
           </p>
 
           <label htmlFor="username">Username</label>
@@ -113,7 +120,10 @@ export default function Login({ setIsAuth }) {
             type="text"
             autoComplete="username"
             value={username}
-            onChange={(e) => setUsername(e.target.value)}
+            onChange={(e) => {
+              setUsername(e.target.value);
+              setError("");
+            }}
             placeholder="Enter your username"
             autoCapitalize="none"
             spellCheck={false}
@@ -128,7 +138,10 @@ export default function Login({ setIsAuth }) {
             type="password"
             autoComplete="current-password"
             value={password}
-            onChange={(e) => setPassword(e.target.value)}
+            onChange={(e) => {
+              setPassword(e.target.value);
+              setError("");
+            }}
             placeholder="Enter your password"
             required
             disabled={loading}

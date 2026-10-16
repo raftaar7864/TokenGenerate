@@ -37,6 +37,14 @@ const tokenSchema = new mongoose.Schema({
   validUpto: {
     type: String
   },
+  // Print customization saved with every token so old batches can be reprinted.
+  printSettings: {
+    headerText: { type: String, default: "" },
+    additionalInfo: { type: String, default: "" },
+    organizerName: { type: String, default: "আয়োজক অসীম কুমার বিশ্বাস" },
+    organizerDesignation: { type: String, default: "বিধায়ক রানাঘাট দক্ষিণ বিধানসভা" },
+    footerText: { type: String, default: "" }
+  },
   paidAt: {
     type: Date
   },

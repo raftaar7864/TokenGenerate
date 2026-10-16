@@ -8,7 +8,8 @@ exports.generateToken = async (req,res)=>{
 try{
 const {
 category,
-validUpto
+validUpto,
+printSettings = {}
 }=req.body;
 const now = new Date();
 const batchNumber =
@@ -16,9 +17,9 @@ const batchNumber =
 now.getFullYear()+
 ("0"+(now.getMonth()+1)).slice(-2)+
 ("0"+now.getDate()).slice(-2)+
-Math.floor(1000 + Math.random()*9000);
+Math.floor(10 + Math.random()*90);
 const tokenNumber =
-"TKN"+
+"T"+
 Date.now()+
 Math.floor(100+Math.random()*900);
 const qrCode =
@@ -29,6 +30,7 @@ tokenNumber,
 batchNumber,
 category,
 validUpto,
+printSettings,
 qrCode,
 paymentStatus:"Unpaid"
 });
@@ -49,7 +51,8 @@ try{
 const {
 category,
 count,
-validUpto
+validUpto,
+printSettings = {}
 }=req.body;
 const total = Number(count);
 const now = new Date();
@@ -58,15 +61,15 @@ const batchNumber =
 now.getFullYear()+
 ("0"+(now.getMonth()+1)).slice(-2)+
 ("0"+now.getDate()).slice(-2)+
-Math.floor(1000+Math.random()*9000);
+Math.floor(10+Math.random()*90);
 let tokens=[];
 for(let i=0;i<total;i++){
 const tokenNumber =
-"TKN"+
+"T"+
 Date.now()+
 Math.floor(
-1000+
-Math.random()*9000
+100+
+Math.random()*900
 );
 const qrCode =
 await QRCode.toDataURL(
@@ -78,6 +81,7 @@ tokenNumber,
 batchNumber,
 category,
 validUpto,
+printSettings,
 qrCode,
 paymentStatus:"Unpaid"
 });
@@ -302,6 +306,32 @@ error:err.message
 });
 }
 };
+// =================================
+// Update printable text for a batch
+// =================================
+exports.updateBatchPrintSettings = async(req,res)=>{
+try{
+const batchNumber = String(req.params.batchNumber || "").trim();
+const input = req.body.printSettings || {};
+const printSettings = {
+  headerText: String(input.headerText || ""),
+  additionalInfo: String(input.additionalInfo || ""),
+  organizerName: String(input.organizerName || ""),
+  organizerDesignation: String(input.organizerDesignation || ""),
+  footerText: String(input.footerText || "")
+};
+const result = await Token.updateMany({ batchNumber }, { $set: { printSettings } });
+if(!result.matchedCount){
+  return res.status(404).json({ error:"Batch not found" });
+}
+const tokens = await Token.find({ batchNumber }).sort({ createdAt:1 });
+res.json({ batchNumber, count:tokens.length, printSettings, tokens });
+}catch(err){
+console.error(err);
+res.status(500).json({ error:err.message });
+}
+};
+
 // =================================
 // Get Tokens By Batch
 // =================================

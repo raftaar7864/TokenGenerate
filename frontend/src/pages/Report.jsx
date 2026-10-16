@@ -1,6 +1,10 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
-const API="http://localhost:5000/api/tokens";
+const API_BASE = (import.meta.env.VITE_API_URL || "http://localhost:5000")
+  .replace(/\/+$/, "");
+
+const API = `${API_BASE}/api/tokens`;
+
 const dateText=v=>v?new Date(v).toLocaleDateString("en-GB"):"N/A";
 export default function Report(){
  const [report,setReport]=useState(null),[loading,setLoading]=useState(true),[error,setError]=useState("");
